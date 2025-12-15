@@ -12,6 +12,23 @@ size_t	ft_strlen(const char *str)
 	return (i);
 }
 
+void	*ft_memcpy(void *dest, const void *src, size_t n)
+{
+	unsigned char		*ptr_dest;
+	unsigned const char	*ptr_src;
+	size_t				i;
+
+	ptr_dest = (unsigned char *)dest;
+	ptr_src = (unsigned const char *)src;
+	i = 0;
+	while (i < n)
+	{
+		ptr_dest[i] = ptr_src[i];
+		i++;
+	}
+	return ((void *)(ptr_dest));
+}
+
 char	*ft_strchr(const char *s, int c)
 {
 	unsigned char	cc;
@@ -35,26 +52,41 @@ char	*ft_strchr(const char *s, int c)
 char	*ft_strjoin(char *s1, char *s2)
 {
 	char	*res;
-	size_t	i;
-	size_t	j;
+	size_t	len_s1;
+	size_t	len_s2;
 
 	if (!s2)
 		return (NULL);
-	res = malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
+	len_s1 = ft_strlen(s1);
+	len_s2 = ft_strlen(s2);
+	res = malloc(len_s1 + len_s2 + 1);
 	if (!res)
 		return (NULL);
-	i = 0;
-	while (s1 && s1[i])
-	{
-		res[i] = s1[i];
-		i++;
-	}
-	j = 0;
-	while (s2[j])
-		res[i++] = s2[j++];
-	res[i] = '\0';
+	ft_memcpy(res, s1, len_s1);
+	ft_memcpy(res + len_s1, s2, len_s2);
+	res[len_s1 + len_s2] = '\0';
 	free(s1);
 	return (res);
+}
+
+char	*ft_strdup(const char *s)
+{
+	unsigned char	*ptr;
+	int				len;
+	int				i;
+
+	i = 0;
+	len = ft_strlen(s);
+	ptr = (unsigned char *)malloc(len * sizeof(char) + 1);
+	if (!ptr)
+		return (NULL);
+	while (i < len)
+	{
+		ptr[i] = s[i];
+		i++;
+	}
+	ptr[i] = '\0';
+	return ((char *)ptr);
 }
 
 char	*ft_extract_line(char **accumulator)
@@ -62,7 +94,6 @@ char	*ft_extract_line(char **accumulator)
 	char	*line;
 	char	*rest;
 	int		i;
-	int		j;
 
 	i = 0;
 	while ((*accumulator)[i] && (*accumulator)[i] != '\n')
@@ -72,20 +103,15 @@ char	*ft_extract_line(char **accumulator)
 	line = malloc(i + 1);
 	if (!line)
 		return (NULL);
-	j = 0;
-	while (j < i)
+	ft_memcpy(line, *accumulator, i);
+	line[i] = '\0';
+	if ((*accumulator)[i] == '\0')
 	{
-		line[j] = (*accumulator)[j];
-		j++;
+		free(*accumulator);
+		*accumulator = NULL;
+		return (line);
 	}
-	line[j] = '\0';
-	rest = malloc(ft_strlen(*accumulator + i) + 1);
-	if (!rest)
-		return (NULL);
-	j = 0;
-	while ((*accumulator)[i])
-		rest[j++] = (*accumulator)[i++];
-	rest[j] = '\0';
+	rest = ft_strdup(*accumulator + i);
 	free(*accumulator);
 	*accumulator = rest;
 	return (line);
